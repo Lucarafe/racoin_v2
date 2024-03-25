@@ -2,12 +2,13 @@
 
 namespace controller;
 
+use AllowDynamicProperties;
 use model\Categorie;
 use model\Annonce;
 use model\Photo;
 use model\Annonceur;
 
-class getCategorie {
+#[AllowDynamicProperties] class getCategorie {
 
     protected $categories = array();
 
@@ -15,28 +16,21 @@ class getCategorie {
         return Categorie::orderBy('nom_categorie')->get()->toArray();
     }
 
-    public function getCategorieContent($chemin, $n) {
-        $tmp = Annonce::with("Annonceur")->orderBy('id_annonce','desc')->where('id_categorie', "=", $n)->get();
-        $annonce = [];
-        foreach($tmp as $t) {
-            $t->nb_photo = Photo::where("id_annonce", "=", $t->id_annonce)->count();
-            if($t->nb_photo > 0){
-                $t->url_photo = Photo::select("url_photo")
-                    ->where("id_annonce", "=", $t->id_annonce)
-                    ->first()->url_photo;
-            }else{
-                $t->url_photo = $chemin.'/img/noimg.png';
-            }
-            $t->nom_annonceur = Annonceur::select("nom_annonceur")
-                ->where("id_annonceur", "=", $t->id_annonceur)
-                ->first()->nom_annonceur;
-            array_push($annonce, $t);
+    public function getCategorieContent($n) {
+        $annonces = Annonce::with("Annonceur")->orderBy('id_annonce','desc')->where('id_categorie', "=", $n)->get();
+        $results = array();
+        foreach ($annonces as $annonce) {
+            $annonce->nb_photo = $annonce->photo->count();
+            $annonce->url_photo = $annonce->photo->count() > 0 ? $annonce->photo->first()->url_photo : 'img/noimg.png';
+
+            $annonce->nom_annonceur = $annonce->annonceur()->first()->nom_annonceur;
+            $results[] = $annonce;
         }
-        $this->annonce = $annonce;
+        return $results;
     }
 
     public function displayCategorie($twig, $menu, $chemin, $cat, $n) {
-        $template = $twig->load("homeController.html.twig");
+        $template = $twig->load("index.html.twig");
         $menu = array(
             array('href' => $chemin,
                 'text' => 'Acceuil'),
@@ -44,7 +38,7 @@ class getCategorie {
                 'text' => Categorie::find($n)->nom_categorie)
         );
 
-        $this->getCategorieContent($chemin, $n);
+        $this->annonce = $this->getCategorieContent($n);
         echo $template->render(array(
             "breadcrumb" => $menu,
             "chemin" => $chemin,

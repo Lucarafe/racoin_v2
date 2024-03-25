@@ -19,7 +19,7 @@ class Search {
     }
 
     function research($array, $twig, $menu, $chemin, $cat) {
-        $template = $twig->load("homeController.html.twig");
+        $template = $twig->load("index.html.twig");
         $menu = array(
             array('href' => $chemin,
                 'text' => 'Acceuil'),
