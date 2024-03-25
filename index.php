@@ -3,7 +3,7 @@ require 'vendor/autoload.php';
 
 use controller\getCategorie;
 use controller\getDepartment;
-use controller\index;
+use controller\homeController;
 use controller\item;
 use db\connection;
 
@@ -62,7 +62,7 @@ if (!isset($_SESSION['token'])) {
 
 $menu = [
     [
-        'href' => './index.php',
+        'href' => './homeController.php',
         'text' => 'Accueil'
     ]
 ];
@@ -73,8 +73,8 @@ $cat = new getCategorie();
 $dpt = new getDepartment();
 
 $app->get('/', function () use ($twig, $menu, $chemin, $cat) {
-    $index = new index();
-    $index->displayAllAnnonce($twig, $menu, $chemin, $cat->getCategories());
+    $index = new homeController();
+    $index->displayAllAnnonce($twig, $chemin, $cat->getCategories());
 });
 
 $app->get('/item/{n}', function ($request, $response, $arg) use ($twig, $menu, $chemin, $cat) {
